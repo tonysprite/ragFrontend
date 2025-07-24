@@ -111,7 +111,11 @@ const handleSubmit = async () => {
   }
   try {
     // 构建上下文内容
-    const context = conversations.value.map(conv => `Q: ${conv.query}\nA: ${conv.answer}`).join('\n\n');
+    const context = conversations.value
+        .filter(conv => conv.role === selectedRole.value)
+        .map(conv => `Q: ${conv.query}
+A: ${conv.answer}`)
+        .join('\n\n');
     const response = await axios.post('/query', {
       role: selectedRole.value,
       query: query.value.trim(),
@@ -123,11 +127,12 @@ const handleSubmit = async () => {
       }
     })
     conversations.value.push({
-      answer: response.data.answer,
-      source: response.data.source,
       query: query.value,
+      answer: response.data.answer,
+      role: selectedRole.value,
+      source: response.data.source,
       timestamp: new Date().toLocaleString()
-    })
+    });
     query.value = '' // 清空输入框
   } catch (error) {
     console.error('提交问题失败:', error)
