@@ -105,20 +105,17 @@ const handleSubmit = async () => {
       alert('请选择有效的角色')
       return
     }
-  } else if (!selectedRole.value) {
-    alert('请在问题中使用@提及角色')
-    return
+  } else if (!selectedRole.value || !query.value.trim()) {
+    alert('请@角色并输入有效的问题内容');
+    return;
   }
-  if (!query.value.trim()) {
-    alert('请输入问题')
-    return
-  }
-
   try {
+    // 构建上下文内容
+    const context = conversations.value.map(conv => `Q: ${conv.query}\nA: ${conv.answer}`).join('\n\n');
     const response = await axios.post('/query', {
       role: selectedRole.value,
       query: query.value.trim(),
-      context: ''
+      context: context
     }, {
       headers: {
         'Content-Type': 'application/json',
@@ -136,7 +133,9 @@ const handleSubmit = async () => {
     console.error('提交问题失败:', error)
     alert('提交问题失败，请稍后重试')
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
+    selectedRole.value = null;
+    query.value = '';
   }
 }
 
